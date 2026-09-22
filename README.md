@@ -2,7 +2,7 @@
 
 I used to run drone workshops for kids, and I'd tell them that underneath everything, a drone is just an ESC, an FC, and motors. But I could never actually show them that. All I had on hand to teach with was a DJI Tello, which flew great and came apart for nothing, nothing to open up, nothing to point at and explain. That gap was what pushed me to build a drone with hardware I could actually open, take apart, and explain, even though it would still need real firmware to fly. That part was something to learn properly, not something to dodge.
 
-## Phase 1: Edudrone — How I Chose My Setup
+## Phase 1: Edudrone - How I Chose My Setup
 
 ### Choosing a Drone Class: Microdrone, Freestyle, or Long Range
 
@@ -38,7 +38,7 @@ Motor: AxisFlying 1960KV.
 
 Receiver: GEPRC ELRS.
 
-GPS module.
+GPS module: GEPRC GEP-M10Q
 
 ### Soldering: Temperature and Technique
 
