@@ -1,7 +1,5 @@
 # Edudrone: Build Log
 
-I built an FPV 5 inch drone from individual parts with my own hands, flashed INAV firmware onto a GEPRC Taker H743BT, and got it flying after a few rounds of pretty painful ESC debugging. From that drone, I'm now developing RapidScout, a project that uses an autonomous drone flying a pre-mapped GPS route, scanning with a camera to detect smoke and fire, and reporting the location back to a human operator. Right now I'm upgrading to a 7 inch long range frame, while also researching how to use an ESP32-S3 to send flight commands and an ESP32-CAM to run a smoke and fire detection model.
-
 I used to run drone workshops for kids, and I'd tell them that underneath everything, a drone is just an ESC, an FC, and motors. But I could never actually show them that. All I had on hand to teach with was a DJI Tello, which flew great and came apart for nothing, nothing to open up, nothing to point at and explain. That gap was what pushed me to build a drone with hardware I could actually open, take apart, and explain, even though it would still need real firmware to fly. That part was something to learn properly, not something to dodge.
 
 ## Phase 1: Edudrone — How I Chose My Setup
