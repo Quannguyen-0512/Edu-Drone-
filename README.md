@@ -106,25 +106,14 @@ The target dropdown showed NOT FOUND, no auto-detection. I looked up the exact p
 
 I found a GitHub issue on INAV describing a bug where the flight controller blocks passthrough writes to the ESC, which matched what I was seeing. I backed up the entire INAV configuration first with the CLI diff all command, gyro and accelerometer calibration, PID profiles, the mixer, pin profiles, so I could restore everything exactly no matter what happened next. Then I flashed Betaflight onto the FC to isolate the variable, confirming the target as GEPRC_TAKER_H743.
 
-Flashing the ESC through Betaflight produced the exact same stuck-at-Sending result. Same failure on two completely different flight controller firmwares ruled out INAV specifically as the cause.
+Flashing the ESC through Betaflight produced the exact same stuck-at-Sending result.
+![AM32 Configurator console showing the ACK_D_GENERAL_ERROR log, all four ESCs stuck in Bootloader status](images/am32-bootloader-error.png)
 
 I decided to stop experimenting on the main board while it still worked, and went looking through what I already had. I found a spare GEPRC 4-in-1 board I'd set aside, which had a single unrelated bad XT60 solder joint from earlier.
 
-Before putting real power through the spare board, I ran it through a proper check: visual inspection of the solder joints, a multimeter continuity and resistance check across the terminals to rule out a short, a smoke stopper test, then DC voltage checks at several points, the XT60 input, the replaced capacitor legs, the 5V BEC pin.
+I managed to resolder a spare GEPRC ESC, and verified it with a smoke stopper and a multimeter across the XT60 pads. But I'd put all my attention on the big XT60 pad and soldered the motor wires more carelessly, figuring a smaller pad meant no risk of a cold joint. The cold joint was hidden inside, looking fine from the outside, and a static continuity test didn't catch it. When I pushed the throttle to max to test the motors, the strong vibration snapped the wire loose from the joint, causing a short and burning the circuit.
 
-Once it cleared every check, I flashed INAV back onto it and restored the entire configuration by pasting the diff all backup into the CLI. PID, mixer, calibration, mode switches, all back exactly where they'd been. The spare board flew again.
 
-Test flights afterward still didn't show a clean pattern. In calm conditions, with no wind, the drone would just drift without settling in any one direction. I took the props off, put the drone on a table, and pulled the roll stick to watch the motors directly. This time it was motors 1 and 3 climbing while 2 and 4 slowed down, a different pairing than the first incident. The solder was fine, so I suspected AM32 and the ESC again, just like before.
-
-Sure enough, AM32 wouldn't save the changes again, and flashing gave a new error this time, ACK_D_GENERAL_ERROR, not supported by this bootloader.
-
-![AM32 Configurator console showing the ACK_D_GENERAL_ERROR log, all four ESCs stuck in Bootloader status](images/am32-bootloader-error.png)
-
-I followed the same playbook as before, backed up with diff all, switched to Betaflight, but the same error kept showing up.
-
-This time I didn't dig for the root cause. I moved straight to another spare board instead, to avoid losing more time.
-
-I managed to resolder this spare GEP ESC, and verified it with a smoke stopper and a multimeter across the XT60 pads. But I'd put all my attention on the big XT60 pad and soldered the motor wires more carelessly, figuring a smaller pad meant no risk of a cold joint. The cold joint was hidden inside, looking fine from the outside, and a static continuity test didn't catch it. When I pushed the throttle to max to test the motors, the strong vibration snapped the wire loose from the joint, causing a short and burning the circuit.
 
 Since the motor set was ruined anyway, I decided to use the moment to move up to a 7 inch long range frame, lower KV motors for steadier flight, more room to carry electronics, and longer range.
 
