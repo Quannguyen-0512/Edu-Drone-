@@ -32,7 +32,7 @@ The FC, or Flight Controller, is the brain. It runs firmware like INAV, Betaflig
 
 ### What I Actually Chose
 
-Stack: GEPRC Taker H743BT flight controller. The ESC was originally the stock one bundled with the stack, but I later replaced it with a Flywoo GOKU G55M 55A 4-in-1 ESC after solder damage (more on that below).
+Stack: GEPRC Taker H743BT flight controller. The ESC was originally the stock one bundled with the stack, but I later replaced it with a Flywoo GOKU G55M 55A 4-in-1 ESC after solder damage.
 
 Motor: AxisFlying 1960KV.
 
