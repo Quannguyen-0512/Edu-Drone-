@@ -159,7 +159,7 @@ Code: [`fire_detection_gpu.py`](fire_detection_gpu.py)
   
 Algorithm flowchart:
 
-    ![Algorithm flowchart](flowchart.png)
+    ![Algorithm flowchart](flowchart.pptx)
 
 #### In progress
 
