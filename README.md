@@ -1,4 +1,14 @@
 # Edudrone: Build Log
+## At a Glance
+
+**Edudrone** (June – August 2026) is a 5-inch FPV drone I built from individual components, so I could show students what is actually inside a drone. **Rapid Scout** (September 2026 – present) gives it a mission: fly a pre-planned GPS route while a ground-station computer watches the video for fire and smoke, then report where it was found.
+
+**My own work:** parts selection, soldering and assembly, firmware setup (Betaflight, then INAV), tuning, debugging, and the ground-station detection code.
+**Not my own work:** the fire and smoke detection model is a public YOLOv11 model from Roboflow Universe.
+
+**Status:** the 5-inch build flew. After an ESC failure, I am rebuilding on a 7-inch long-range frame. Fire and smoke detection runs in real time on a laptop GPU, tested with a webcam; ESP32-CAM video and GPS tagging are in progress.
+
+**Jump to:** [The ESC Incident](#the-esc-incident) · [Current progress](#current-progress)
 ## About the Project
 ### Where it started: Edudrone
 
@@ -20,7 +30,7 @@ The fire and smoke detection code for the ground station is in
 [`fire_detection_gpu.py`](fire_detection_gpu.py).
 
 
-## Phase 1: Edudrone - How I Chose My Setup
+## Phase 1: Edudrone - How I Chose My Setup (June - August 2026)
 
 ### Choosing a Drone Class: Microdrone, Freestyle, or Long Range
 
@@ -100,7 +110,7 @@ The first skill worth learning is hovering the drone in one spot. For beginners,
 
 ---
 
-## Phase 2: RapidScout -  Giving the Drone a Mission
+## Phase 2: RapidScout -  Giving the Drone a Mission (September 2026 - Present) 
 
 ### From Edudrone to RapidScout
 
