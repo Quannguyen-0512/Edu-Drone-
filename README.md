@@ -4,6 +4,7 @@
 **Edudrone** (June – August 2026) is a 5-inch FPV drone I built from individual components, so I could show students what is actually inside a drone. **Rapid Scout** (September 2026 – present) gives it a mission: fly a pre-planned GPS route while a ground-station computer watches the video for fire and smoke, then report where it was found.
 
 **My own work:** parts selection, soldering and assembly, firmware setup (Betaflight, then INAV), tuning, debugging, and the ground-station detection code.
+
 **Not my own work:** the fire and smoke detection model is a public YOLOv11 model from Roboflow Universe.
 
 **Status:** the 5-inch build flew. After an ESC failure, I am rebuilding on a 7-inch long-range frame. Fire and smoke detection runs in real time on a laptop GPU, tested with a webcam; ESP32-CAM video and GPS tagging are in progress.
