@@ -145,7 +145,7 @@ The CLI diff all backup I ran before switching firmware to test the INAV theory 
 
 #### Done
 
-Hardware design for the 7-inch build. Parts selected and documented: TBS Source One V6 7" DC frame, ZTM 2807 1300KV motors, Gemfan 7050 props, GEPRC Taker H65 4-in-1 ESC, 6S 3300mAh LiPo, carried over from the earlier build: GEPRC Taker H743 BT flight controller (INAV), GEP-M10Q GPS with compass, and GEPRC ELRS receiver. I currently use an ESP32-CAM to handles video.
+Hardware design for the 7-inch build. Parts selected and documented: TBS Source One V6 7" DC frame, ZTM 2807 1300KV motors, Gemfan 7050 props, GEPRC Taker H65 4-in-1 ESC, 6S 3300mAh LiPo, carried over from the earlier build: GEPRC Taker H743 BT flight controller (INAV), GEP-M10Q GPS with compass, and GEPRC ELRS receiver. I currently plan on using an ESP32-CAM to handles video.
 
 
  **Fire and smoke detection on the ground station.** 
