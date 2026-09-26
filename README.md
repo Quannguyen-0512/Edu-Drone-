@@ -196,4 +196,7 @@ The ESP32-CAM streams over WiFi, which only covers a short range. That is fine f
 
 ## References
 
-- [GEPRC Taker H743BT FC
+- [GEPRC Taker H743BT FC Manual](docs/TAKER-H743-BT-FC-Manual.pdf)
+- [Fire & Smoke Detection model (Roboflow)](https://universe.roboflow.com/fire-detection-2x0mw/fire-smoke-detection-zszdt-bhuqo)
+- [Meteor65 Pro II O4 Brushless Whoop Quadcopter](https://betafpv.com/products/meteor65-pro-ii-o4-brushless-whoop-quadcopter?variant=44067835084934)
+- [Flywoo GOKU G55M 32bit 128K 3-6S 55A 4-in-1 ESC](https://www.defiancerc.com/products/flywoo-goku-g55m-32bit-128k-3-6s-55a-4-in-1-esc-30x30)
