@@ -158,7 +158,6 @@ Hardware design for the 7-inch build. Parts selected and documented: TBS Source 
 Code: [`fire_detection_gpu.py`](fire_detection_gpu.py)
   
 Algorithm flowchart:
-
     ![Algorithm flowchart](flowchart.png)
 
 #### In progress
