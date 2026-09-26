@@ -8,7 +8,7 @@ So the first goal was simple: build a drone from open, off-the-shelf parts that 
 
 ### The new direction: Rapid Scout, a fire-scouting drone
 
-When finished my 5-inch drone, I started planning for a new mission that my drone could do based on some interesting features of FPV drone such as GPS mapping and Poshold. 
+When I finished my 5-inch drone, I started planning a new mission for it, built around features FPV flight controllers already offer, such as GPS navigation and Position Hold.
 
 The idea behind Rapid Scout:
 
@@ -50,7 +50,7 @@ The FC, or Flight Controller, is the brain. It runs firmware like INAV, Betaflig
 
 ### What I Actually Chose
 
-Stack: GEPRC Taker H743BT flight controller. The ESC was originally the stock one bundled with the stack, but I later replaced it with a Flywoo GOKU G55M 55A 4-in-1 ESC after solder damage.
+Stack: GEPRC Taker H743BT flight controller. The ESC was originally the stock GEPRC 4-in-1 bundled with the stack. While I was learning to solder, I let solder flow across the board, and since powering it risked a short, I set it aside and switched to a Flywoo GOKU G55M 55A 4-in-1. Later I went back and cleaned up the original GEPRC board (see The ESC Incident).
 
 Motor: AxisFlying 1960KV.
 
@@ -60,11 +60,11 @@ GPS module: GEPRC GEP-M10Q
 
 ### Soldering: Temperature and Technique
 
-The cheap soldering iron I first bought from the market couldn't get solder to flow evenly onto a pad no matter what I tried. I switched to an FNIRSI HS-01 (the HS-02 has more features if you want them), and while I was still getting used to the new iron, I ruined my first ESC: solder smeared around the board instead of sitting cleanly on the pad. That mistake also took out my GPS module and receiver, damaged by the same bad soldering job.
+The cheap soldering iron I first bought from the market couldn't get solder to flow evenly onto a pad no matter what I tried. I switched to an FNIRSI HS-01 (the HS-02 has more features if you want them). While I was still getting used to the new iron, solder flowed across my first ESC instead of sitting cleanly on the pad, and I set the board aside rather than risk a short. I also overheated my GPS module and receiver while soldering them, and both stopped working.
 
 Motor pads need around 350°C, ESC pads around 400°C. Pre-tin the wire and the pad separately, apply flux first, and use 63/37 solder since it sets fast and leaves fewer cold joints.
 
-I ended up replacing the damaged ESC with a Flywoo GOKU G55M 55A 4-in-1, which has a pad-hole design that makes soldering noticeably easier than the stock board.
+In place of the stock ESC, I switched to a Flywoo GOKU G55M 55A 4-in-1, which has a pad-hole design that makes soldering noticeably easier than the stock board.
 
 One small trick: if a motor spins the wrong direction, you can reverse it by swapping any two of the three motor-to-ESC wires, no need to re-flash anything.
 
@@ -106,7 +106,7 @@ The first skill worth learning is hovering the drone in one spot. For beginners,
 
 After I got the drone flying, I had an idea: fly the drone at altitude, scan the ground below with a camera, and detect smoke and fire, then report back to a device by sending GPS coordinates.
 
-The drone flies a pre-mapped GPS route. A WiFi camera streams video to a YOLOv5 model that looks for smoke and fire. When something is detected, the GPS coordinates and the frame that triggered the detection get sent to a human operator. The drone doesn't take any action on its own, it just reports.
+The drone flies a pre-mapped GPS route. A camera streams video to the ground station, where a public YOLOv11 fire/smoke model runs on the GPU. When something is detected, the GPS coordinates and the frame that triggered the detection get sent to a human operator. The drone doesn't take any action on its own, it just reports.
 
 To make that happen, the first thing I needed was a drone that could fly steady, hold its position well, and stop drifting.
 
@@ -114,51 +114,57 @@ To make that happen, the first thing I needed was a drone that could fly steady,
 
 With the drone flying, I wanted to smooth it out further before mapping any routes. Mid test flight, I noticed a strange pattern: holding the throttle steady, motors 1 and 4 would drop their output while motors 2 and 3 spiked up, one diagonal pair moving opposite the other.
 
-I opened AM32 Configurator to check the ESC parameters, motor KV, poles, timing. I adjusted the values and hit Save, but after a power cycle, none of it had actually changed. I tried again, checking all four ESCs this time, same result. Then I checked Stuck Motor Protection, and all four ESC status icons flipped from green to red, stuck in Bootloader.
+#### Incident 1: All four ESC channels stuck in bootloader
+
+I opened AM32 Configurator to check the ESC parameters: motor KV, poles, timing. I adjusted the values and hit Save, but after a power cycle, none of it had actually changed. I tried again, checking all four ESCs this time, same result. Then I checked Stuck Motor Protection, and all four ESC status icons flipped from green to red, stuck in Bootloader.
 
 I didn't stop to figure out why. I moved straight to Flash Firmware instead.
 
-The target dropdown showed NOT FOUND, no auto-detection. I looked up the exact part printed on the ESC, a Flywoo GOKU G55M 128K 3-6S 55A, and cross-referenced it against AM32's firmware source on GitHub, the targets.h file, to find the right target manually.
+The target dropdown showed NOT FOUND, no auto-detection. I looked up the exact part printed on the ESC, a Flywoo GOKU G55M 128K 3-6S 55A, and cross-referenced it against AM32's firmware source on GitHub, the `targets.h` file, to find the right target manually.
 
-I found a GitHub issue on INAV describing a bug where the flight controller blocks passthrough writes to the ESC, which matched what I was seeing. I backed up the entire INAV configuration first with the CLI diff all command, gyro and accelerometer calibration, PID profiles, the mixer, pin profiles, so I could restore everything exactly no matter what happened next. Then I flashed Betaflight onto the FC.
+I flashed the four channels one by one. After ESC 1 was flashed, motor 1 stopped spinning. The same thing happened with ESC 2, 3 and 4. The motors themselves were fine; the ESC channels driving them no longer responded.
 
-Flashing the ESC through Betaflight produced the exact same stuck-at-Sending result.
+I found a GitHub issue on INAV describing a bug where the flight controller blocks passthrough writes to the ESC, which matched what I was seeing. I backed up the entire INAV configuration first with the CLI `diff all` command (gyro and accelerometer calibration, PID profiles, the mixer, pin profiles) so I could restore everything exactly no matter what happened next. Then I flashed Betaflight onto the FC to rule INAV out.
+
+Flashing the ESC through Betaflight produced the exact same stuck-at-Sending result. At that point I stopped and treated the GOKU as dead.
+
 ![AM32 Configurator console showing the ACK_D_GENERAL_ERROR log, all four ESCs stuck in Bootloader status](images/am32-bootloader-error.png)
 
-I decided to stop experimenting on this ESC, and went looking through what I had left. I found a spare GEPRC 4-in-1 board I'd set aside, which had a single unrelated bad XT60 solder joint from earlier.
+#### Going back to the board I had set aside
 
-I managed to resolder a spare GEPRC ESC, and verified it with a smoke stopper and a multimeter across the XT60 pads. But I'd put all my attention on the big XT60 pad and soldered the motor wires more carelessly, figuring a smaller pad meant no risk of a cold joint. The cold joint was hidden inside, looking fine from the outside, and a static continuity test didn't catch it. When I pushed the throttle to max to test the motors, the strong vibration snapped the wire loose from the joint, causing a short and burning the circuit.
+The stock GEPRC 4-in-1 ESC from early in the build was still sitting in a drawer. I had let solder flow across it while learning to solder, and I never dared to power it, since a solder bridge could short the board. By now my soldering had improved, so I went back to it. I used a desoldering pump to remove the excess solder and the old solder that had oxidized over time, cleaned the board with industrial alcohol, and re-tinned the pads.
 
+Before powering it, I checked it with a smoke stopper and a multimeter across the XT60 pads. Then I pasted back the `diff all` backup, and the PID, mixer and calibration were restored exactly as they had been. The board I had been too afraid to power was back in service.
 
+#### Incident 2: A cold joint that passed the test
 
-Since the motor set was ruined anyway, I decided to use the moment to move up to a 7 inch long range frame, lower KV motors for steadier flight, more room to carry electronics, and longer range.
+While working on that board, I had put all my attention on the big XT60 pad and soldered the motor wires more carelessly, figuring a smaller pad meant no risk of a cold joint. The cold joint was hidden inside, looking fine from the outside, and a static continuity test didn't catch it. When I pushed the throttle to max to test the motors, the strong vibration snapped the wire loose from the joint, causing a short and burning the circuit.
+
+Since the motor set was ruined anyway, I decided to use the moment to move up to a 7 inch long range frame: lower KV motors for steadier flight, more room to carry electronics, and longer range.
 
 ### What I Took Away
 
-Save not saving, the icon turning red, getting stuck in Bootloader, three warning signs in a row that should have made me stop, but I kept going straight to Flash Firmware instead of stopping to ask why.
+From the first incident: Save not saving, the icon turning red, getting stuck in Bootloader. Three warning signs in a row should have made me stop, but I answered each one by going straight to Flash Firmware, repeating an action that couldn't be undone, even when it failed with the exact same error every time. Flashing all four channels one after another, each time a chance to stop that I didn't take, is what bricked the entire ESC.
 
-Repeating an action that can't be undone, even when it fails with the exact same error every time, is what directly killed 3 of the 4 motors on the main board, and worse, I kept clicking it over and over, each time a chance to stop that I didn't take.
+From the second incident: a continuity test only proves a joint conducts while it sits still. It says nothing about whether the joint will hold under vibration and full load. The smallest pads deserve the same care as the biggest one.
 
-The CLI diff all backup I ran before switching firmware to test the INAV theory ended up saving the entire evening later on, when the spare board came back to life. Paste one command, and the PID, mixer, and calibration were back exactly as they'd been. Without it, all that earlier tuning would have just been gone.
+And the one thing I did right: the `diff all` backup I ran before switching firmware. When the cleaned-up board was ready, one pasted command restored the PID, mixer and calibration exactly. Without it, all that earlier tuning would have been gone.
 
 ### Current progress
 
 #### Done
 
-Hardware design for the 7-inch build. Parts selected and documented: TBS Source One V6 7" DC frame, ZTM 2807 1300KV motors, Gemfan 7050 props, GEPRC Taker H65 4-in-1 ESC, 6S 3300mAh LiPo, carried over from the earlier build: GEPRC Taker H743 BT flight controller (INAV), GEP-M10Q GPS with compass, and GEPRC ELRS receiver. I currently plan on using an ESP32-CAM to handles video.
+Hardware design for the 7-inch build. Parts selected and documented: TBS Source One V6 7" DC frame, ZTM 2807 1300KV motors, Gemfan 7050 props, GEPRC Taker H65 4-in-1 ESC, 6S 3300mAh LiPo, carried over from the earlier build: GEPRC Taker H743 BT flight controller (INAV), GEP-M10Q GPS with compass, and GEPRC ELRS receiver. An ESP32-CAM will handle video; it is not integrated yet, so detection is currently tested with a laptop webcam.
 
+**Fire and smoke detection on the ground station.**
 
- **Fire and smoke detection on the ground station.** 
-
-  It runs locally on an NVIDIA RTX 3050 Laptop GPU using a public YOLOv11
-  fire/smoke model from Roboflow Universe (ONNX Runtime with CUDA). It has been
-  tested with a laptop webcam and runs in real time, with a check that forces
-  the model onto the GPU instead of silently falling back to the CPU.
+It runs locally on an NVIDIA RTX 3050 Laptop GPU using a public YOLOv11 fire/smoke model from Roboflow Universe (ONNX Runtime with CUDA). It has been tested with a laptop webcam and runs in real time, with a check that forces the model onto the GPU instead of silently falling back to the CPU.
 
 Code: [`fire_detection_gpu.py`](fire_detection_gpu.py)
-  
+
 Algorithm flowchart:
-    ![Algorithm flowchart](images/flowchart.png)
+
+![Algorithm flowchart](images/flowchart.png)
 
 #### In progress
 
@@ -169,13 +175,14 @@ Assembling the 7-inch drone as parts arrive.
 
 Switch the video source from the webcam to the ESP32-CAM stream.
 Set up autonomous waypoint missions and return-to-home failsafe in INAV.
-Field test: burn a small pile of dry wood, fly the drone over it, and check that the fire is detected and its GPS position is reported correctly.
+Field test: burn a small pile of dry wood in an open area, with water and a fire extinguisher on hand, fly the drone over it, and check that the fire is detected and its GPS position is reported correctly.
+
+#### Known limitation
+
+The ESP32-CAM streams over WiFi, which only covers a short range. That is fine for close-range testing, but the video link will need to be rethought before long-range flights.
 
 ---
 
 ## References
 
-- [GEPRC Taker H743BT FC Manual](docs/TAKER-H743-BT-FC-Manual.pdf)
-- [Fire & Smoke Detection model (Roboflow)](https://universe.roboflow.com/fire-detection-2x0mw/fire-smoke-detection-zszdt-bhuqo)
-- [Meteor65 Pro II O4 Brushless Whoop Quadcopter](https://betafpv.com/products/meteor65-pro-ii-o4-brushless-whoop-quadcopter?variant=44067835084934)
-- [Flywoo GOKU G55M 32bit 128K 3-6S 55A 4-in-1 ESC](https://www.defiancerc.com/products/flywoo-goku-g55m-32bit-128k-3-6s-55a-4-in-1-esc-30x30)
+- [GEPRC Taker H743BT FC
