@@ -100,7 +100,7 @@ The first skill worth learning is hovering the drone in one spot. For beginners,
 
 ---
 
-## Phase 2: RapidScout — Giving the Drone a Mission
+## Phase 2: RapidScout -  Giving the Drone a Mission
 
 ### From Edudrone to RapidScout
 
