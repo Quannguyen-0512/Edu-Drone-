@@ -16,6 +16,8 @@ The drone flies a pre-planned GPS route over the area being monitored.
 A downward-facing camera streams video back to a ground station over WiFi.
 A YOLO object-detection model running on the ground station's GPU looks for fire and smoke in real time.
 When fire or smoke is detected, the GPS coordinates and the frame that triggered the detection are sent to a human operator.
+The fire and smoke detection code for the ground station is in
+[`fire_detection_gpu.py`](fire_detection_gpu.py).
 
 
 ## Phase 1: Edudrone - How I Chose My Setup
@@ -143,8 +145,21 @@ The CLI diff all backup I ran before switching firmware to test the INAV theory 
 
 #### Done
 
-Hardware design for the 7-inch build. Parts selected and documented: TBS Source One V6 7" DC frame, ZTM 2807 1300KV motors, Gemfan 7050 props, GEPRC Taker H65 4-in-1 ESC, 6S 3300mAh LiPo, carried over from the earlier build: GEPRC Taker H743 BT flight controller (INAV), GEP-M10Q GPS with compass, and GEPRC ELRS receiver. An ESP32-CAM handles video.
-Fire and smoke detection on the ground station. The detection pipeline runs locally on an NVIDIA RTX 3050 Laptop GPU using a public YOLOv11 fire/smoke model from Roboflow Universe (ONNX Runtime with CUDA). It has been tested with a laptop webcam and runs in real time, with a check that forces the model onto the GPU instead of silently falling back to the CPU.
+Hardware design for the 7-inch build. Parts selected and documented: TBS Source One V6 7" DC frame, ZTM 2807 1300KV motors, Gemfan 7050 props, GEPRC Taker H65 4-in-1 ESC, 6S 3300mAh LiPo, carried over from the earlier build: GEPRC Taker H743 BT flight controller (INAV), GEP-M10Q GPS with compass, and GEPRC ELRS receiver. I currently use an ESP32-CAM to handles video.
+
+
+ **Fire and smoke detection on the ground station.** 
+
+  It runs locally on an NVIDIA RTX 3050 Laptop GPU using a public YOLOv11
+  fire/smoke model from Roboflow Universe (ONNX Runtime with CUDA). It has been
+  tested with a laptop webcam and runs in real time, with a check that forces
+  the model onto the GPU instead of silently falling back to the CPU.
+
+Code: [`fire_detection_gpu.py`](fire_detection_gpu.py)
+  
+Algorithm flowchart:
+
+    ![Algorithm flowchart](flowchart.png)
 
 #### In progress
 
