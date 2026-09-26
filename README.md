@@ -106,7 +106,7 @@ The first skill worth learning is hovering the drone in one spot. For beginners,
 
 After I got the drone flying, I had an idea: fly the drone at altitude, scan the ground below with a camera, and detect smoke and fire, then report back to a device by sending GPS coordinates.
 
-The drone flies a pre-mapped GPS route. A WiFi camera streams video to a self-trained YOLOv5 model that looks for smoke and fire. When something is detected, the GPS coordinates and the frame that triggered the detection get sent to a human operator. The drone doesn't take any action on its own, it just reports.
+The drone flies a pre-mapped GPS route. A WiFi camera streams video to a YOLOv5 model that looks for smoke and fire. When something is detected, the GPS coordinates and the frame that triggered the detection get sent to a human operator. The drone doesn't take any action on its own, it just reports.
 
 To make that happen, the first thing I needed was a drone that could fly steady, hold its position well, and stop drifting.
 
