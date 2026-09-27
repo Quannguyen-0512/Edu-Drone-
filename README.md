@@ -178,15 +178,17 @@ Algorithm flowchart:
 ![Algorithm flowchart](images/flowchart.png)
 
 #### In progress
-
-Reading GPS data from the flight controller through the ESP32 (over MSP) and sending it to the ground station, so every detection can be tagged with a location.
-Assembling the 7-inch drone as parts arrive.
+- **GPS tagging:** reading GPS data from the flight controller through an
+  ESP32-S3 and sending it to the ground station, so every
+  detection can be tagged with a location.
+- **Camera integration:** switching the video source from the laptop webcam
+  to the drone's ESP32-CAM stream.
 
 #### Next
-
-Switch the video source from the webcam to the ESP32-CAM stream.
-Set up autonomous waypoint missions and return-to-home failsafe in INAV.
-Field test: burn a small pile of dry wood in an open area, with water and a fire extinguisher on hand, fly the drone over it, and check that the fire is detected and its GPS position is reported correctly.
+- Set up autonomous waypoint missions and a return-to-home failsafe in INAV.
+- Field test: burn a small pile of dry wood in an open area, with water and
+  a fire extinguisher on hand, fly the drone over it, and check that the fire
+  is detected and its GPS position is reported correctly.
 
 #### Known limitation
 
