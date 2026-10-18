@@ -1,37 +1,18 @@
 # Edudrone: Build Log
-## At a Glance
 
-**Edudrone** (June – August 2026) is a 5-inch FPV drone I built from individual components, so I could show students what is actually inside a drone. **Rapid Scout** (September 2026 – present) gives it a mission: fly a pre-planned GPS route while a ground-station computer watches the video for fire and smoke, then report where it was found.
+A build log of an open-hardware FPV drone, from a first 5 inch build to RapidScout, a drone that helps spot smoke and fire from the air.
 
-**My own work:** parts selection, soldering and assembly, firmware setup (Betaflight, then INAV), tuning, debugging, and the ground-station detection code.
+## At a glance
 
-**Not my own work:** the fire and smoke detection model is a public YOLOv11 model from Roboflow Universe.
-
-**Status:** the 5-inch build flew. After an ESC failure, I am rebuilding on a 7-inch long-range frame. Fire and smoke detection runs in real time on a laptop GPU, tested with a webcam; ESP32-CAM video and GPS tagging are in progress.
-
-**Jump to:** [The ESC Incident](#the-esc-incident) · [Current progress](#current-progress)
-## About the Project
-### Where it started: Edudrone
-
-Edudrone began as a teaching tool. I used to run drone workshops for kids, and I always told them that underneath everything, a drone is just an ESC, a flight controller, and motors. But I could never actually show them. The only drone I had to teach with was a DJI Tello: it flew well, but there was nothing to open up, nothing to point at and explain.
-
-So the first goal was simple: build a drone from open, off-the-shelf parts that students could take apart and understand, while still running real flight firmware. Before buying real parts, I practiced the fundamentals on a Meteor65 Pro: flashing firmware, binding a receiver to a transmitter, and basic tuning. The first build was a 5-inch freestyle quad.
-
-### The new direction: Rapid Scout, a fire-scouting drone
-
-When I finished my 5-inch drone, I started planning a new mission for it, built around features FPV flight controllers already offer, such as GPS navigation and Position Hold.
-
-The idea behind Rapid Scout:
-
-The drone flies a pre-planned GPS route over the area being monitored.
-A downward-facing camera streams video back to a ground station over WiFi.
-A YOLO object-detection model running on the ground station's GPU looks for fire and smoke in real time.
-When fire or smoke is detected, the GPS coordinates and the frame that triggered the detection are sent to a human operator.
-The fire and smoke detection code for the ground station is in
-[`fire_detection_gpu.py`](fire_detection_gpu.py).
-
-
-## Phase 1: Edudrone - How I Chose My Setup (June - August 2026)
+| | |
+|---|---|
+| **What it is** | A build log and code for an open-hardware FPV drone that I assembled from individual parts so every component can be opened up and explained, and for its next stage, RapidScout, a low cost scouting drone for spotting fire and smoke. |
+| **What it does** | A camera on the drone sends video to a laptop, which runs a public YOLO fire and smoke detection model on its GPU and raises an alert. Planned next: tag each detection with a GPS position and fly a pre-mapped route. The drone only reports, it does not act on its own. |
+| **Built with** | A 7 inch long range frame, a GEPRC Taker H743 BT flight controller running INAV, a GEPRC GEP-M10Q GPS, an ExpressLRS radio link, a USB camera on an ESP32-S3 that streams video over WebSocket, and a laptop with an NVIDIA RTX 3050 GPU running Python with ONNX Runtime and Roboflow Inference. |
+| **My role** | Chose the parts, soldered the electronics, flashed and configured the flight controller, rebuilt the drone on a 7 inch frame after an ESC failure, and wrote the detection program. I did not train the detection model, it is a public one. |
+| **Status** | Work in progress. The 7 inch drone is built, and video streaming and fire and smoke detection work on the laptop. Reading GPS data to tag detections is in progress. Flying a pre-mapped route and a ground station screen are not done yet. |
+| **In this repo** | The build log below (Phase 1 is the 5 inch Edudrone, Phase 2 is RapidScout), the detection program in `code/`, a hardware diagram and screenshots in `images/`, and the flight controller manual in `docs/`. |
+## Phase 1: Edudrone - How I Chose My Setup
 
 ### Choosing a Drone Class: Microdrone, Freestyle, or Long Range
 
@@ -59,9 +40,9 @@ The ESC, or Electronic Speed Controller, usually comes as a "4-in-1" board that 
 
 The FC, or Flight Controller, is the brain. It runs firmware like INAV, Betaflight, or ArduPilot, reads data from the gyroscope, accelerometer, GPS, and compass, and sends output commands to the ESC.
 
-### What I Actually Chose
+### What I Actually Chose (5 inch build)
 
-Stack: GEPRC Taker H743BT flight controller. The ESC was originally the stock GEPRC 4-in-1 bundled with the stack. While I was learning to solder, I let solder flow across the board, and since powering it risked a short, I set it aside and switched to a Flywoo GOKU G55M 55A 4-in-1. Later I went back and cleaned up the original GEPRC board (see The ESC Incident).
+Stack: GEPRC Taker H743BT flight controller. The ESC was originally the stock one bundled with the stack, but I later replaced it with a Flywoo GOKU G55M 55A 4-in-1 ESC after solder damage (more on that below).
 
 Motor: AxisFlying 1960KV.
 
@@ -71,11 +52,11 @@ GPS module: GEPRC GEP-M10Q
 
 ### Soldering: Temperature and Technique
 
-The cheap soldering iron I first bought from the market couldn't get solder to flow evenly onto a pad no matter what I tried. I switched to an FNIRSI HS-01 (the HS-02 has more features if you want them). While I was still getting used to the new iron, solder flowed across my first ESC instead of sitting cleanly on the pad, and I set the board aside rather than risk a short. I also overheated my GPS module and receiver while soldering them, and both stopped working.
+The cheap soldering iron I first bought from the market couldn't get solder to flow evenly onto a pad no matter what I tried. I switched to an FNIRSI HS-01 (the HS-02 has more features if you want them), and while I was still getting used to the new iron, I ruined my first ESC: solder smeared around the board instead of sitting cleanly on the pad. That mistake also took out my GPS module and receiver, damaged by the same bad soldering job.
 
 Motor pads need around 350°C, ESC pads around 400°C. Pre-tin the wire and the pad separately, apply flux first, and use 63/37 solder since it sets fast and leaves fewer cold joints.
 
-In place of the stock ESC, I switched to a Flywoo GOKU G55M 55A 4-in-1, which has a pad-hole design that makes soldering noticeably easier than the stock board.
+I ended up replacing the damaged ESC with a Flywoo GOKU G55M 55A 4-in-1, which has a pad-hole design that makes soldering noticeably easier than the stock board.
 
 One small trick: if a motor spins the wrong direction, you can reverse it by swapping any two of the three motor-to-ESC wires, no need to re-flash anything.
 
@@ -101,7 +82,7 @@ On the Receiver tab, set Receiver Mode to Serial (via UART), Serial Receiver Pro
 
 For GPS, connect it to UART4, set Sensor Input to GPS, and set the baud rate to 115200.
 
-![Board with GPS mounted, receiver not yet installed](images/gps-setup.png)
+[![Board with GPS mounted, receiver not yet installed](https://github.com/Quannguyen-0512/Edu-Drone-/raw/main/images/gps-setup.png)](/Quannguyen-0512/Edu-Drone-/blob/main/images/gps-setup.png)
 
 ### First Test Flight and Tuning
 
@@ -111,94 +92,126 @@ The first skill worth learning is hovering the drone in one spot. For beginners,
 
 ---
 
-## Phase 2: RapidScout -  Giving the Drone a Mission (September 2026 - Present) 
+## Phase 2: RapidScout - Giving the Drone a Mission
 
 ### From Edudrone to RapidScout
 
-After I got the drone flying, I had an idea: fly the drone at altitude, scan the ground below with a camera, and detect smoke and fire, then report back to a device by sending GPS coordinates.
+After I got the drone flying, I had an idea: fly the drone at altitude, scan the ground below with a camera, and detect smoke and fire. The camera sends its video to a laptop on the ground, which runs a public fire and smoke detection model and raises an alert when it finds something. The drone doesn't take any action on its own, it just reports.
 
-The drone flies a pre-mapped GPS route. A camera streams video to the ground station, where a public YOLOv11 fire/smoke model runs on the GPU. When something is detected, the GPS coordinates and the frame that triggered the detection get sent to a human operator. The drone doesn't take any action on its own, it just reports.
+The full plan also has the drone fly a pre-mapped GPS route and tag every detection with a GPS position, so a human operator knows where to go. This is where each part stands today.
+
+| Part | Status |
+|---|---|
+| 7 inch long range drone running INAV | Built |
+| Video from a USB camera, through an ESP32-S3, over WebSocket to the laptop | Working |
+| Fire and smoke detection on the laptop GPU, with an on-screen alert | Working |
+| Reading GPS data from the flight controller to tag detections | In progress |
+| Flying a pre-mapped GPS route | Not done yet |
+| Ground station interface with the drone's position | Not done yet |
 
 To make that happen, the first thing I needed was a drone that could fly steady, hold its position well, and stop drifting.
 
-### The ESC Incident
+### The ESC Incident: Three Days Debugging Bootloader
 
 With the drone flying, I wanted to smooth it out further before mapping any routes. Mid test flight, I noticed a strange pattern: holding the throttle steady, motors 1 and 4 would drop their output while motors 2 and 3 spiked up, one diagonal pair moving opposite the other.
 
-#### Incident 1: All four ESC channels stuck in bootloader
-
-I opened AM32 Configurator to check the ESC parameters: motor KV, poles, timing. I adjusted the values and hit Save, but after a power cycle, none of it had actually changed. I tried again, checking all four ESCs this time, same result. Then I checked Stuck Motor Protection, and all four ESC status icons flipped from green to red, stuck in Bootloader.
+I opened AM32 Configurator to check the ESC parameters, motor KV, poles, timing. I adjusted the values and hit Save, but after a power cycle, none of it had actually changed. I tried again, checking all four ESCs this time, same result. Then I checked Stuck Motor Protection, and all four ESC status icons flipped from green to red, stuck in Bootloader.
 
 I didn't stop to figure out why. I moved straight to Flash Firmware instead.
 
-The target dropdown showed NOT FOUND, no auto-detection. I looked up the exact part printed on the ESC, a Flywoo GOKU G55M 128K 3-6S 55A, and cross-referenced it against AM32's firmware source on GitHub, the `targets.h` file, to find the right target manually.
+The target dropdown showed NOT FOUND, no auto-detection. I looked up the exact part printed on the ESC, a Flywoo GOKU G55M 128K 3-6S 55A, and cross-referenced it against AM32's firmware source on GitHub, the targets.h file, to find the right target manually.
 
-I flashed the four channels one by one. After ESC 1 was flashed, motor 1 stopped spinning. The same thing happened with ESC 2, 3 and 4. The motors themselves were fine; the ESC channels driving them no longer responded.
+I found a GitHub issue on INAV describing a bug where the flight controller blocks passthrough writes to the ESC, which matched what I was seeing. I backed up the entire INAV configuration first with the CLI diff all command, gyro and accelerometer calibration, PID profiles, the mixer, pin profiles, so I could restore everything exactly no matter what happened next. Then I flashed Betaflight onto the FC to isolate the variable, confirming the target as GEPRC_TAKER_H743.
 
-I found a GitHub issue on INAV describing a bug where the flight controller blocks passthrough writes to the ESC, which matched what I was seeing. I backed up the entire INAV configuration first with the CLI `diff all` command (gyro and accelerometer calibration, PID profiles, the mixer, pin profiles) so I could restore everything exactly no matter what happened next. Then I flashed Betaflight onto the FC to rule INAV out.
+Flashing the ESC through Betaflight produced the exact same stuck-at-Sending result. [![AM32 Configurator console showing the ACK_D_GENERAL_ERROR log, all four ESCs stuck in Bootloader status](https://github.com/Quannguyen-0512/Edu-Drone-/raw/main/images/am32-bootloader-error.png)](/Quannguyen-0512/Edu-Drone-/blob/main/images/am32-bootloader-error.png)
 
-Flashing the ESC through Betaflight produced the exact same stuck-at-Sending result. At that point I stopped and treated the GOKU as dead.
+I decided to stop experimenting on the main board while it still worked, and went looking through what I already had. I found a spare GEPRC 4-in-1 board I'd set aside, which had a single unrelated bad XT60 solder joint from earlier.
 
-![AM32 Configurator console showing the ACK_D_GENERAL_ERROR log, all four ESCs stuck in Bootloader status](images/am32-bootloader-error.png)
+I managed to resolder a spare GEPRC ESC, and verified it with a smoke stopper and a multimeter across the XT60 pads. But I'd put all my attention on the big XT60 pad and soldered the motor wires more carelessly, figuring a smaller pad meant no risk of a cold joint. The cold joint was hidden inside, looking fine from the outside, and a static continuity test didn't catch it. When I pushed the throttle to max to test the motors, the strong vibration snapped the wire loose from the joint, causing a short and burning the circuit.
 
-#### Going back to the board I had set aside
+Since the motor set was ruined anyway, I decided to use the moment to move up to a 7 inch long range frame, lower KV motors for steadier flight, more room to carry electronics, and longer range.
 
-The stock GEPRC 4-in-1 ESC from early in the build was still sitting in a drawer. I had let solder flow across it while learning to solder, and I never dared to power it, since a solder bridge could short the board. By now my soldering had improved, so I went back to it. I used a desoldering pump to remove the excess solder and the old solder that had oxidized over time, cleaned the board with industrial alcohol, and re-tinned the pads.
+### What I Took Away From Those Days
 
-Before powering it, I checked it with a smoke stopper and a multimeter across the XT60 pads. Then I pasted back the `diff all` backup, and the PID, mixer and calibration were restored exactly as they had been. The board I had been too afraid to power was back in service.
+Save not saving, the icon turning red, getting stuck in Bootloader, three warning signs in a row that should have made me stop, but I kept going straight to Flash Firmware instead of stopping to ask why.
 
-#### Incident 2: A cold joint that passed the test
+Repeating an action that can't be undone, even when it fails with the exact same error every time, is what directly left all four ESC channels on the main board stuck in the bootloader, and worse, I kept clicking it over and over, each time a chance to stop that I didn't take.
 
-While working on that board, I had put all my attention on the big XT60 pad and soldered the motor wires more carelessly, figuring a smaller pad meant no risk of a cold joint. The cold joint was hidden inside, looking fine from the outside, and a static continuity test didn't catch it. When I pushed the throttle to max to test the motors, the strong vibration snapped the wire loose from the joint, causing a short and burning the circuit.
+The CLI diff all backup I ran before switching firmware to test the INAV theory ended up saving the entire evening later on, when the spare board came back to life. Paste one command, and the PID, mixer, and calibration were back exactly as they'd been. Without it, all that earlier tuning would have just been gone.
 
-Since the motor set was ruined anyway, I decided to use the moment to move up to a 7 inch long range frame: lower KV motors for steadier flight, more room to carry electronics, and longer range.
+### The 7 Inch Build
 
-### What I Took Away
+The ESC incident ended the 5 inch build, so I rebuilt on a 7 inch long range frame. The bigger frame has room to carry more sensors, and lower KV motors with larger propellers are more efficient for longer flights. The new build keeps the GEPRC Taker H743 BT flight controller and the same GPS and receiver models as before, with a new frame, motors, propellers, ESC, and battery. Smaller parts such as propeller ducts are 3D printed. The parts I bought new cost about 6.8 million VND in total.
 
-From the first incident: Save not saving, the icon turning red, getting stuck in Bootloader. Three warning signs in a row should have made me stop, but I answered each one by going straight to Flash Firmware, repeating an action that couldn't be undone, even when it failed with the exact same error every time. Flashing all four channels one after another, each time a chance to stop that I didn't take, is what bricked the entire ESC.
+[![How the parts connect](images/rapidscout-hardware-diagram.png)](images/rapidscout-hardware-diagram.png)
 
-From the second incident: a continuity test only proves a joint conducts while it sits still. It says nothing about whether the joint will hold under vibration and full load. The smallest pads deserve the same care as the biggest one.
+*How the parts connect. The camera and ESP32-S3 have a dashed border because they are a separate payload that only sends video to the laptop.*
 
-And the one thing I did right: the `diff all` backup I ran before switching firmware. When the cleaned-up board was ready, one pasted command restored the PID, mixer and calibration exactly. Without it, all that earlier tuning would have been gone.
+| Part | What I used | Notes |
+|---|---|---|
+| Frame | TBS Source One V6 7" DC | 313 mm diagonal, 173 g |
+| Motors | ZTM 2807 1300KV (x4) | Lower KV than the 5 inch build |
+| Propellers | Gemfan Hurricane 7050, 3 blade (x4) | 7 inch diameter, 5 inch pitch |
+| ESC | GEPRC Taker H65 8S 65A 4-in-1 | 65 A continuous, 3S to 6S when stacked with the FC |
+| Battery | Ovonic 3300mAh 6S 75C, XT60 | 22.2 V |
+| Flight controller | GEPRC Taker H743 BT | STM32H743, runs INAV |
+| GPS | GEPRC GEP-M10Q | u-blox M10 chip with a compass, 10 Hz |
+| Receiver | GEPRC ELRS Nano 2.4G | ExpressLRS |
+| Transmitter | RadioMaster T8L | ELRS 2.4 GHz |
+| Camera and link | USB camera and ESP32-S3 | See the next section |
 
-### Current progress
+The heavier frame needs bigger motors, bigger motors draw more power, and a bigger battery adds weight again. I chose the 3300 mAh pack because it seemed enough, and I have not yet worked out how long the drone flies on it.
 
-#### Done
+### Camera and AI Detection over WebSocket
 
-Hardware design for the 7-inch build. Parts selected and documented: TBS Source One V6 7" DC frame, ZTM 2807 1300KV motors, Gemfan 7050 props, GEPRC Taker H65 4-in-1 ESC, 6S 3300mAh LiPo, carried over from the earlier build: GEPRC Taker H743 BT flight controller (INAV), GEP-M10Q GPS with compass, and GEPRC ELRS receiver. An ESP32-CAM will handle video; it is not integrated yet, so detection is currently tested with a laptop webcam.
+The detection does not run on the drone. A USB camera plugs into the USB port of an ESP32-S3 board, which reads each JPEG frame and sends it to the laptop over WiFi using a WebSocket. The laptop runs the detection model on its GPU and shows the annotated video.
 
-**Fire and smoke detection on the ground station.**
+```
+USB camera --> ESP32-S3 --(WiFi, WebSocket, JPEG frames)--> Laptop (GPU) --> annotated video + alert
+```
 
-It runs locally on an NVIDIA RTX 3050 Laptop GPU using a public YOLOv11 fire/smoke model from Roboflow Universe (ONNX Runtime with CUDA). It has been tested with a laptop webcam and runs in real time, with a check that forces the model onto the GPU instead of silently falling back to the CPU.
+The Python program is in [`code/fire_smoke_detection.py`](code/fire_smoke_detection.py). It connects to the ESP32-S3's WebSocket address (set in `CAMERA_WS_URL`), decodes each frame with OpenCV, runs the model, and draws boxes, labels, and a frames-per-second counter. If the connection drops, or no frame arrives for 5 seconds, it reconnects and keeps retrying every 2 seconds. Setting `VIDEO_MODE = "webcam"` lets you test the same program with the laptop's own webcam, without the ESP32.
 
-Code: [`fire_detection_gpu.py`](fire_detection_gpu.py)
+**The model.** I did not train this model. I use Fire-Smoke-Detection-Yolov11 by Sayed Gamall, published on Roboflow Universe under CC BY 4.0. It detects two classes, fire and smoke. According to its page it was trained on 10,463 images (9,156 for training, 872 for validation, and 435 for testing) and scores 76.8% mAP@50, 80.3% precision, and 73.2% recall. Training a model of my own is hard because I have no good dataset.
 
-Algorithm flowchart:
+**Running it on the GPU.** The model runs through ONNX Runtime with CUDA. A missing library can make ONNX Runtime fall back to the CPU without telling you, so the program checks that the model really is on the GPU and stops with an error if it is not. My laptop has an NVIDIA GeForce RTX 3050 Laptop GPU, with Python 3.12, ONNX Runtime GPU, Roboflow Inference, OpenCV, Supervision, and websocket-client.
 
-![Algorithm flowchart](images/flowchart.png)
+**Reducing false alarms.** The model's general threshold is 0.25, then each class has its own, 0.35 for fire and 0.3 for smoke. The alert only turns on when fire or smoke appears in 3 frames in a row, and it stays on for 1.5 seconds after the last detection. The alert is a flashing red overlay with a warning text, plus a beep on Windows. Press `q` to quit and `t` to test the alert.
 
-#### In progress
-- **GPS tagging:** reading GPS data from the flight controller through an
-  ESP32-S3 and sending it to the ground station, so every
-  detection can be tagged with a location.
-- **Camera integration:** switching the video source from the laptop webcam
-  to the drone's ESP32-CAM stream.
+[![Detection test on a pre-recorded video](images/detection-demo.png)](images/detection-demo.png)
 
-#### Next
-- Set up autonomous waypoint missions and a return-to-home failsafe in INAV.
-- Field test: burn a small pile of dry wood in an open area, with water and
-  a fire extinguisher on hand, fly the drone over it, and check that the fire
-  is detected and its GPS position is reported correctly.
+*A test run of the detection program on a pre-recorded video of smoke over a forested hillside, not on footage from my own drone. The program draws a box around the smoke it found and shows the frame rate (the counter reads 6.8 FPS in this frame). The red banner appears once fire or smoke has been detected in 3 frames in a row.*
 
-#### Known limitation
+To run it, set your own Roboflow API key as an environment variable and start the program. The first run needs internet to download the model, and later runs work offline. Never put the key in the code.
 
-The ESP32-CAM streams over WiFi, which only covers a short range. That is fine for close-range testing, but the video link will need to be rethought before long-range flights.
+```
+$env:ROBOFLOW_API_KEY = "your-key-here"     # PowerShell
+python code/fire_smoke_detection.py
+```
+
+It only works on visible light video in daylight, because the camera is a plain USB camera and not a thermal one. WiFi also limits how far the drone can be from the laptop.
+
+### Currently Working On
+
+I am reading GPS data from the flight controller over MSP with an ESP32-S3, so every detection can be tagged with a location. After that comes flying a pre-mapped GPS route, and a ground station screen that shows the drone's position next to the video.
+
+### What Comes Next
+
+The drone's own position is not the same as the fire's position. I want to estimate where the fire really is from the flight altitude, the camera angle, and where the fire appears in the frame. I also want to add images of small fires and local forest scenes to improve the model, and to replace WiFi with a longer range link.
 
 ---
 
+## Repository layout
+
+| Path | Contents |
+|---|---|
+| `code/fire_smoke_detection.py` | Fire and smoke detection program that receives video over WebSocket |
+| `docs/` | GEPRC Taker H743 BT flight controller manual |
+| `images/` | Photos and screenshots used in this log |
+
 ## References
 
-- [GEPRC Taker H743BT FC Manual](docs/TAKER-H743-BT-FC-Manual.pdf)
-- [Fire & Smoke Detection model (Roboflow)](https://universe.roboflow.com/fire-detection-2x0mw/fire-smoke-detection-zszdt-bhuqo)
-- [Meteor65 Pro II O4 Brushless Whoop Quadcopter](https://betafpv.com/products/meteor65-pro-ii-o4-brushless-whoop-quadcopter?variant=44067835084934)
-- [Flywoo GOKU G55M 32bit 128K 3-6S 55A 4-in-1 ESC](https://www.defiancerc.com/products/flywoo-goku-g55m-32bit-128k-3-6s-55a-4-in-1-esc-30x30)
+1. [GEPRC Taker H743BT FC Manual](https://github.com/Quannguyen-0512/Edu-Drone-/blob/main/docs/TAKER-H743-BT-FC-Manual.pdf)
+2. [Fire-Smoke-Detection-Yolov11 (Roboflow Universe, Sayed Gamall, CC BY 4.0)](https://universe.roboflow.com/sayed-gamall/fire-smoke-detection-yolov11)
+3. [Meteor65 Pro II O4 Brushless Whoop Quadcopter](https://betafpv.com/products/meteor65-pro-ii-o4-brushless-whoop-quadcopter?variant=44067835084934)
+4. [Flywoo GOKU G55M 32bit 128K 3-6S 55A 4-in-1 ESC](https://www.defiancerc.com/products/flywoo-goku-g55m-32bit-128k-3-6s-55a-4-in-1-esc-30x30)
