@@ -112,7 +112,7 @@ The full plan also has the drone fly a pre-mapped GPS route and tag every detect
 
 To make that happen, the first thing I needed was a drone that could fly steady, hold its position well, and stop drifting.
 
-### The ESC Incident: Three Days Debugging Bootloader
+### The ESC Incident
 
 With the drone flying, I wanted to smooth it out further before mapping any routes. Mid test flight, I noticed a strange pattern: holding the throttle steady, motors 1 and 4 would drop their output while motors 2 and 3 spiked up, one diagonal pair moving opposite the other.
 
@@ -132,13 +132,6 @@ I managed to resolder a spare GEPRC ESC, and verified it with a smoke stopper an
 
 Since the motor set was ruined anyway, I decided to use the moment to move up to a 7 inch long range frame, lower KV motors for steadier flight, more room to carry electronics, and longer range.
 
-### What I Took Away From Those Days
-
-Save not saving, the icon turning red, getting stuck in Bootloader, three warning signs in a row that should have made me stop, but I kept going straight to Flash Firmware instead of stopping to ask why.
-
-Repeating an action that can't be undone, even when it fails with the exact same error every time, is what directly left all four ESC channels on the main board stuck in the bootloader, and worse, I kept clicking it over and over, each time a chance to stop that I didn't take.
-
-The CLI diff all backup I ran before switching firmware to test the INAV theory ended up saving the entire evening later on, when the spare board came back to life. Paste one command, and the PID, mixer, and calibration were back exactly as they'd been. Without it, all that earlier tuning would have just been gone.
 
 ### The 7 Inch Build
 
