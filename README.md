@@ -8,11 +8,12 @@ A build log of an open-hardware FPV drone, from a first 5 inch build to RapidSco
 |---|---|
 | **What it is** | A build log and code for an open-hardware FPV drone that I assembled from individual parts so every component can be opened up and explained, and for its next stage, RapidScout, a low cost scouting drone that I am building to spot fire and smoke. |
 | **What it does** | A USB camera on an ESP32-S3 board sends video to a laptop, which runs a [public YOLO fire and smoke detection model](https://universe.roboflow.com/sayed-gamall/fire-smoke-detection-yolov11) on its GPU and raises an alert. The plan is to carry the camera on the drone. For now it runs on the bench and is not mounted on the drone yet. Planned next: tag each detection with a GPS position and fly a pre-mapped route. The drone only reports, it does not act on its own. |
-| **Built with** | A [7 inch long range frame](#the-7-inch-build), a GEPRC Taker H743 BT flight controller ([manual](docs/TAKER-H743-BT-FC-Manual.pdf)) running INAV, a GEPRC GEP-M10Q GPS, an ExpressLRS radio link, a USB camera on an ESP32-S3 that [streams video over WebSocket](#camera-and-ai-detection-over-websocket) (so far on the bench, not yet mounted on the drone), and a laptop with an NVIDIA RTX 3050 GPU running Python with ONNX Runtime and Roboflow Inference. |
+| **Built with** | A [7 inch long range frame](#the-7-inch-build), a GEPRC Taker H743 BT flight controller ([manual](docs/TAKER-H743-BT-FC-Manual.pdf)) running INAV, a GEPRC GEP-M10Q GPS, a MicoAir MTF-02 optical flow sensor, an ExpressLRS radio link, a USB camera on an ESP32-S3 that [streams video over WebSocket](#camera-and-ai-detection-over-websocket) (so far on the bench, not yet mounted on the drone), and a laptop with an NVIDIA RTX 3050 GPU running Python with ONNX Runtime and Roboflow Inference. |
 | **The code** | One Python program, [`code/fire_smoke_detection.py`](code/fire_smoke_detection.py). It receives JPEG frames from the ESP32 over WebSocket, runs the Roboflow fire and smoke model on the GPU with ONNX Runtime, applies a separate confidence threshold to each class, draws boxes and a frame rate counter, and raises a flashing red alert after 3 detections in a row. It checks that the model really runs on the GPU, reconnects by itself when the video drops, and can use the laptop's webcam for testing. |
 | **My role** | Chose the parts, soldered the electronics, flashed and configured the flight controller, rebuilt the drone on a 7 inch frame after an ESC failure, and wrote the detection program. I did not train the detection model, it is a public one. |
-| **Status** | Work in progress. The 7 inch drone is built. Video streaming and fire and smoke detection work on the laptop, tested with the camera on the bench. The camera and ESP32-S3 are not mounted on the drone yet, so the video link has not been tested in flight. Reading GPS data to tag detections is [in progress](#currently-working-on). Flying a pre-mapped route and a ground station screen are not done yet. |
+| **Status** | Work in progress. The 7 inch drone is built, and a [short video](https://youtube.com/shorts/Z5TeIFCt900) shows it hovering at low altitude, held by an optical flow sensor. Video streaming and fire and smoke detection work on the laptop, tested with the camera on the bench. The camera and ESP32-S3 are not mounted on the drone yet, so the video link has not been tested in flight. Reading GPS data to tag detections is [in progress](#currently-working-on). Flying a pre-mapped route and a ground station screen are not done yet. |
 | **In this repo** | The build log below ([Phase 1](#phase-1-edudrone---how-i-chose-my-setup) is the 5 inch Edudrone, [Phase 2](#phase-2-rapidscout---giving-the-drone-a-mission) is RapidScout), the detection program in [`code/`](code/), a hardware diagram and screenshots in [`images/`](images/), and the flight controller manual in [`docs/`](docs/). |
+
 ## Phase 1: Edudrone - How I Chose My Setup
 
 ### Choosing a Drone Class: Microdrone, Freestyle, or Long Range
@@ -104,6 +105,7 @@ The full plan also has the drone fly a pre-mapped GPS route and tag every detect
 | Part | Status |
 |---|---|
 | 7 inch long range drone running INAV | Built |
+| Short low-altitude hover held by an optical flow sensor | Tested, [on video](https://youtube.com/shorts/Z5TeIFCt900) |
 | Video from a USB camera, through an ESP32-S3, over WebSocket to the laptop | Working, tested on the bench |
 | Fire and smoke detection on the laptop GPU, with an on-screen alert | Working |
 | Mounting the camera and ESP32-S3 on the drone and testing the link in flight | Not done yet |
@@ -133,7 +135,6 @@ I managed to resolder a spare GEPRC ESC, and verified it with a smoke stopper an
 
 Since the motor set was ruined anyway, I decided to use the moment to move up to a 7 inch long range frame, lower KV motors for steadier flight, more room to carry electronics, and longer range.
 
-
 ### The 7 Inch Build
 
 The ESC incident ended the 5 inch build, so I rebuilt on a 7 inch long range frame. The bigger frame has room to carry more sensors, and lower KV motors with larger propellers are more efficient for longer flights. The new build keeps the GEPRC Taker H743 BT flight controller and the same GPS and receiver models as before, with a new frame, motors, propellers, ESC, and battery. Smaller parts such as propeller ducts are 3D printed. The parts I bought new cost about 6.8 million VND in total.
@@ -153,62 +154,17 @@ The ESC incident ended the 5 inch build, so I rebuilt on a 7 inch long range fra
 | GPS | GEPRC GEP-M10Q | u-blox M10 chip with a compass, 10 Hz |
 | Receiver | GEPRC ELRS Nano 2.4G | ExpressLRS |
 | Transmitter | RadioMaster T8L | ELRS 2.4 GHz |
+| Optical flow sensor | MicoAir MTF-02 | Used for the short low-altitude hover test |
 | Camera and link | USB camera and ESP32-S3 | Not mounted on the drone yet. See the next section |
 
 The heavier frame needs bigger motors, bigger motors draw more power, and a bigger battery adds weight again. I chose the 3300 mAh pack because it seemed enough, and I have not yet worked out how long the drone flies on it.
+
+### Hover Test with an Optical Flow Sensor
+
+I added a MicoAir MTF-02 optical flow sensor to the drone. This [short video](https://youtube.com/shorts/Z5TeIFCt900) shows the drone hovering at low altitude, held by the sensor. It is an early test, and the camera payload is not mounted yet.
 
 ### Camera and AI Detection over WebSocket
 
 **Status.** So far I have run this on the bench. The camera and the ESP32-S3 sit on my desk and stream to the laptop. They are not mounted on the drone yet, so I have not tested the video link, its range, or the image quality in flight.
 
 The detection does not run on the drone. A USB camera plugs into the USB port of an ESP32-S3 board, which reads each JPEG frame and sends it to the laptop over WiFi using a WebSocket. The laptop runs the detection model on its GPU and shows the annotated video.
-
-```
-USB camera --> ESP32-S3 --(WiFi, WebSocket, JPEG frames)--> Laptop (GPU) --> annotated video + alert
-```
-
-The Python program is in [`code/fire_smoke_detection.py`](code/fire_smoke_detection.py). It connects to the ESP32-S3's WebSocket address (set in `CAMERA_WS_URL`), decodes each frame with OpenCV, runs the model, and draws boxes, labels, and a frames-per-second counter. If the connection drops, or no frame arrives for 5 seconds, it reconnects and keeps retrying every 2 seconds. Setting `VIDEO_MODE = "webcam"` lets you test the same program with the laptop's own webcam, without the ESP32.
-
-**The model.** I did not train this model. I use Fire-Smoke-Detection-Yolov11 by Sayed Gamall, published on Roboflow Universe under CC BY 4.0. It detects two classes, fire and smoke. According to its page it was trained on 10,463 images (9,156 for training, 872 for validation, and 435 for testing) and scores 76.8% mAP@50, 80.3% precision, and 73.2% recall. Training a model of my own is hard because I have no good dataset.
-
-**Running it on the GPU.** The model runs through ONNX Runtime with CUDA. A missing library can make ONNX Runtime fall back to the CPU without telling you, so the program checks that the model really is on the GPU and stops with an error if it is not. My laptop has an NVIDIA GeForce RTX 3050 Laptop GPU, with Python 3.12, ONNX Runtime GPU, Roboflow Inference, OpenCV, Supervision, and websocket-client.
-
-**Reducing false alarms.** The model's general threshold is 0.25, then each class has its own, 0.35 for fire and 0.3 for smoke. The alert only turns on when fire or smoke appears in 3 frames in a row, and it stays on for 1.5 seconds after the last detection. The alert is a flashing red overlay with a warning text, plus a beep on Windows. Press `q` to quit and `t` to test the alert.
-
-[![Detection test on a pre-recorded video](images/detection-demo.png)](images/detection-demo.png)
-
-*A test run of the detection program on a pre-recorded video of smoke over a forested hillside, not on footage from my own drone. The program draws a box around the smoke it found and shows the frame rate (the counter reads 6.8 FPS in this frame). The red banner appears once fire or smoke has been detected in 3 frames in a row.*
-
-To run it, set your own Roboflow API key as an environment variable and start the program. The first run needs internet to download the model, and later runs work offline. Never put the key in the code.
-
-```
-$env:ROBOFLOW_API_KEY = "your-key-here"     # PowerShell
-python code/fire_smoke_detection.py
-```
-
-It only works on visible light video in daylight, because the camera is a plain USB camera and not a thermal one. WiFi will also limit how far the drone can be from the laptop, which I have not measured yet.
-
-### Currently Working On
-
-The next step is to mount the camera and ESP32-S3 on the drone and test the video link in flight. I am also reading GPS data from the flight controller over MSP with an ESP32-S3, so every detection can be tagged with a location. After that comes flying a pre-mapped GPS route, and a ground station screen that shows the drone's position next to the video.
-
-### What Comes Next
-
-The drone's own position is not the same as the fire's position. I want to estimate where the fire really is from the flight altitude, the camera angle, and where the fire appears in the frame. I also want to add images of small fires and local forest scenes to improve the model, and to replace WiFi with a longer range link.
-
----
-
-## Repository layout
-
-| Path | Contents |
-|---|---|
-| `code/fire_smoke_detection.py` | Fire and smoke detection program that receives video over WebSocket |
-| `docs/` | GEPRC Taker H743 BT flight controller manual |
-| `images/` | Photos and screenshots used in this log |
-
-## References
-
-1. [GEPRC Taker H743BT FC Manual](https://github.com/Quannguyen-0512/Edu-Drone-/blob/main/docs/TAKER-H743-BT-FC-Manual.pdf)
-2. [Fire-Smoke-Detection-Yolov11 (Roboflow Universe, Sayed Gamall, CC BY 4.0)](https://universe.roboflow.com/sayed-gamall/fire-smoke-detection-yolov11)
-3. [Meteor65 Pro II O4 Brushless Whoop Quadcopter](https://betafpv.com/products/meteor65-pro-ii-o4-brushless-whoop-quadcopter?variant=44067835084934)
-4. [Flywoo GOKU G55M 32bit 128K 3-6S 55A 4-in-1 ESC](https://www.defiancerc.com/products/flywoo-goku-g55m-32bit-128k-3-6s-55a-4-in-1-esc-30x30)
